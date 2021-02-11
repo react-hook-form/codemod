@@ -38,6 +38,7 @@
     "pinst": "^2.1.4",
     "prettier": "2.2.1",
     "react-hook-form": "^6.14.0",
+    "semantic-release": "^17.3.8",
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.3"
   },
