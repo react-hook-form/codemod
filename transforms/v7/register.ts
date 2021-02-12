@@ -9,7 +9,11 @@ export default function transformer(file: FileInfo, api: API, options) {
     trailingComma: true
   };
 
-  // We search for all `import { ... } from "react-hook-form"`
+  /**
+   * We search for all react-hook-form's imports
+   * @example
+   *  import { ... } from "react-hook-form"
+   * */
   const reactHookFormImports = root.find(j.ImportDeclaration, {
     source: { value: REACT_HOOK_FORM }
   });

@@ -38,6 +38,8 @@ This will start an interactive wizard, and then run the specified transform.
 
 Update the `register` API inside a component which use `useForm` of React Hook Form. This transform is not applied if the component doesn't use `useForm`.
 
+    npx @hookform/codemod v7/update-register
+
 <details>
     <summary>Examples</summary>
 
