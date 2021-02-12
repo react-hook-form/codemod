@@ -1,6 +1,9 @@
 import { FileInfo, API } from 'jscodeshift';
 import { REACT_HOOK_FORM, REGISTER, USE_FORM } from '../../utils/keys';
 
+/**
+ * `update-register` codemod which transforms react-hook-form v6 register api to v7
+ */
 export default function transformer(file: FileInfo, api: API, options) {
   const j = api.jscodeshift;
   const root = j(file.source);

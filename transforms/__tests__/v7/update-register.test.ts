@@ -12,4 +12,4 @@ const fixtures = [
   'with-destructure-rename'
 ];
 
-fixtures.forEach(defineTest(__dirname, 'v7/register'));
+fixtures.forEach(defineTest(__dirname, 'v7/update-register'));
