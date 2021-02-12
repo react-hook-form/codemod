@@ -9,7 +9,7 @@ const fixtures = [
   'function-component',
   'function-components',
   'no-transform',
-  'with-destructure-rename'
+  'custom-register'
 ];
 
 fixtures.forEach(defineTest(__dirname, 'v7/update-register'));

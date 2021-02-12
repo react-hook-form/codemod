@@ -1,11 +1,11 @@
 import { useForm as useRenamedForm } from 'react-hook-form';
 
 const Form = () => {
-  const { register: renamedRegister } = useRenamedForm();
+  const { register: customRegister } = useRenamedForm();
 
   return (
     <form>
-      <input {...renamedRegister('example')} />
+      <input {...customRegister('example')} />
     </form>
   );
 };
