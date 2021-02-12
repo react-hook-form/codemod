@@ -34,6 +34,46 @@ This will start an interactive wizard, and then run the specified transform.
 
 ### Migrate from V6 to V7
 
+#### `v7/update-register`
+
+Update the `register` API inside a component which use `useForm` of React Hook Form. This transform is not applied if the component doesn't use `useForm`.
+
+<details>
+    <summary>Examples</summary>
+
+```diff
+- <input ref={register} name="example" />
++ <input {...register('example')} />
+
+- <input ref={register()} name="example" />
++ <input {...register('example')} />
+
+- <input ref={register()} name="example" />
++ <input {...register('example')} />
+
+- <input ref={register({ required: true })} name="example" />
++ <input {...register('example', { required: true })} />
+
+- <TextInput ref={register({ required: true })} name="example" />
++ <TextInput {...register('example', { required: true })} />
+```
+
+With a custom `register` name
+
+```diff
+    function MyForm() {
+      const { register: customRegister } = useForm();
+
+      return (
+        <form>
+-         <input ref={customRegister} name="example" />
++         <input {...customRegister('example')} />
+        </form>
+      );
+    }
+```
+
+</details>
 
 ## Backers
 
