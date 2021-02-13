@@ -10,5 +10,5 @@
     "outDir": "dist"
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "transforms/__tests__"]
+  "exclude": ["node_modules", "transforms/__tests__", "dist"]
 }

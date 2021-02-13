@@ -7,6 +7,10 @@ function Input() {
 const Form = () => {
   const { register } = useForm();
 
+  useEffect(() => {
+    register('example');
+  }, [register]);
+
   return (
     <form>
       <input {...register('example', { required: true })} />

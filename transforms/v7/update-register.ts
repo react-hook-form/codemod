@@ -61,22 +61,18 @@ export default function transformer(file: FileInfo, api: API, options) {
        *  const { register } = useForm();
        *          ^
        * */
-      const registerProperties = j(useFormDeclarator).find(j.Property, {
-        key: { name: REGISTER }
+      const registerProperties = j(useFormDeclarator).find(j.Identifier, {
+        name: REGISTER
       });
 
       registerProperties.forEach((registerProperty) => {
-        if (registerProperty.value.value.type !== 'Identifier') {
-          return;
-        }
-
         /**
          * Retrieve `register` property name
          * @example
          *  const { register } = useForm();
          *  const { register: registerCustomName } = useForm();
          * */
-        const register = registerProperty.value.value.name;
+        const register = registerProperty.parentPath.value.value.name;
 
         /**
          * Retrieve the related parent component
@@ -111,21 +107,25 @@ export default function transformer(file: FileInfo, api: API, options) {
                 return;
               }
 
-              const jsxAttribute = isCallExpression
+              const maybeJsxAttribute = isCallExpression
                 ? registerIdentifier.parent.parent.parent
                 : registerIdentifier.parent.parent;
 
-              if (jsxAttribute.value.name.name !== 'ref') return;
+              if (maybeJsxAttribute.value.name?.name !== 'ref') return;
 
-              const jsxOpeningElement = j(jsxAttribute.parentPath);
-
+              const jsxOpeningElement = j(maybeJsxAttribute.parentPath);
               // We search for all `name` attribute of the JSX element
               const nameAttributes = jsxOpeningElement.find(j.JSXAttribute, {
                 name: { name: 'name' }
               });
 
               nameAttributes.forEach((nameAttribute) => {
-                if (nameAttribute.value.value.type !== 'Literal') return;
+                if (
+                  nameAttribute.value.value.type !== 'Literal' &&
+                  nameAttribute.value.value.type !== 'StringLiteral'
+                ) {
+                  return;
+                }
 
                 const name = nameAttribute.value.value.value;
                 /**
@@ -152,7 +152,7 @@ export default function transformer(file: FileInfo, api: API, options) {
               });
 
               // We remove the old `ref` attribute
-              j(jsxAttribute).remove();
+              j(maybeJsxAttribute).remove();
             });
           });
       });

@@ -92,8 +92,8 @@ function runTransform({ files, flags, transformer }) {
 
 const TRANSFORMER_INQUIRER_CHOICES = [
   {
-    name: 'register-migration: Transforms register',
-    value: 'register-migration'
+    name: 'v7/update-register: Transforms register api from v6 to v7',
+    value: 'v7/update-register'
   }
 ];
 
