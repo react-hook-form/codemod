@@ -1,5 +1,9 @@
 import { FileInfo, API } from 'jscodeshift';
-import { REACT_HOOK_FORM, REGISTER, USE_FORM } from '../../utils/keys';
+import {
+  findUseFormImportDeclarations,
+  findUseFormDeclarators
+} from '../../utils/getUseFormDeclarators';
+import { REGISTER } from '../../utils/keys';
 
 /**
  * `update-register` codemod which transforms react-hook-form v6 register api to v7
@@ -12,47 +16,11 @@ export default function transformer(file: FileInfo, api: API, options) {
     trailingComma: true
   };
 
-  /**
-   * We search for all react-hook-form's imports
-   * @example
-   *  import { ... } from "react-hook-form"
-   * */
-  const reactHookFormImports = root.find(j.ImportDeclaration, {
-    source: { value: REACT_HOOK_FORM }
-  });
-
-  reactHookFormImports.forEach((pathImport) => {
-    /**
-     * We search for `useForm` in import node
-     * @example
-     *  import { useForm } from "react-hook-form";
-     *           ^
-     * */
-    const useFormImport = pathImport.value.specifiers.find(
-      (specifier) =>
-        specifier.type === 'ImportSpecifier' &&
-        specifier.imported.name === USE_FORM
-    );
-
-    if (!useFormImport) return;
-
-    /**
-     * Retrieve useForm method name: `useForm` or `useFormCustomName`
-     * @example
-     *  import { useForm } from "react-hook-form";
-     *  import { useForm: useFormCustomName } from "react-hook-form";
-     * */
-    const useForm = useFormImport.local.name;
-
-    /**
-     * We search for all uses of `useForm` or `useFormCustomName`
-     * @example
-     *   const { ... } = useForm();
-     *   const { ... } = useFormCustomName();
-     * */
-    const useFormDeclarators = root.find(j.VariableDeclarator, {
-      init: { callee: { name: useForm } }
-    });
+  findUseFormImportDeclarations(root, j).forEach((useFormImportDeclaration) => {
+    const useFormDeclarators = findUseFormDeclarators(
+      root,
+      j
+    )(useFormImportDeclaration);
 
     useFormDeclarators.forEach((useFormDeclarator) => {
       /**
