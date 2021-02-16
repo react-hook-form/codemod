@@ -11,6 +11,16 @@ module.exports = {
   },
   plugins: ['@typescript-eslint'],
   rules: {
-    semi: ['error', 'always']
-  }
+    semi: ['error', 'always'],
+    'comma-dangle': ['error', 'never'],
+    'space-before-function-paren': ['error', 'never']
+  },
+  overrides: [
+    {
+      files: 'transforms/__testfixtures__/**',
+      rules: {
+        'no-undef': 'off'
+      }
+    }
+  ]
 };
