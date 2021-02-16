@@ -2,7 +2,22 @@
   "name": "@hookform/codemod",
   "version": "1.0.0",
   "license": "MIT",
-  "bin": "./dist/bin/hookform-codemod.js",
+  "description": "Migrate React Hook Form V6 to V7 made simple.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react-hook-form/codemod.git"
+  },
+  "keywords": [
+    "react-hook-form",
+    "codemod"
+  ],
+  "bugs": {
+    "url": "https://github.com/react-hook-form/codemod/issues"
+  },
+  "homepage": "https://github.com/react-hook-form/codemod#readme",
+  "bin": {
+    "codemod": "dist/bin/hookform-codemod.js"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest --bail",
