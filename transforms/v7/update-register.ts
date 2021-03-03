@@ -22,6 +22,10 @@ export default function transformer(file: FileInfo, api: API, options) {
       j
     )(useFormImportDeclaration);
 
+    if (!useFormDeclarators) {
+      return;
+    }
+
     useFormDeclarators.forEach((useFormDeclarator) => {
       /**
        * We search for all `register` properties
