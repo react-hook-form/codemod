@@ -36,7 +36,7 @@ This will start an interactive wizard, and then run the specified transform.
 
 #### `v7/update-register`
 
-Update the `register` API inside a component which use `useForm` of React Hook Form. This transform is not applied if the component doesn't use `useForm`.
+Update the `register` API inside a component that use `useForm` of React Hook Form. This transform is not applied if the component doesn't use `useForm`.
 
     npx @hookform/codemod v7/update-register
 
@@ -71,6 +71,47 @@ With a custom `register` name
 -         <input ref={customRegister} name="example" />
 +         <input {...customRegister('example')} />
         </form>
+      );
+    }
+```
+
+</details>
+
+#### `v7/move-errors-to-formState`
+
+It moves `errors` API into `formState` inside a component that use `useForm` of React Hook Form. This transform is not applied if the component doesn't use `useForm`.
+
+    npx @hookform/codemod v7/move-errors-to-formState
+
+<details>
+    <summary>Examples</summary>
+
+```diff
+- const { errors } = useForm();
++ const { formState: { errors } } = useForm();
+
+- const { errors: customErrors } = useForm();
++ const { formState: { errors: customErrors } } = useForm();
+
+- const { errors, formState: { isDirty } } = useForm();
++ const { formState: { isDirty, errors } } = useForm();
+
+- const { errors: customErrors, formState: { isDirty } } = useForm();
++ const { formState: { isDirty, errors: customErrors } } = useForm();
+```
+
+With a custom `register` name
+
+```diff
+    function MyForm() {
+-     const { errors, formState } = useForm();
++     const { formState } = useForm();
++     const { errors } = formState;
+
+      const isDirty = formState.isDirty;
+
+      return (
+        //
       );
     }
 ```
