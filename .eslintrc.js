@@ -9,6 +9,7 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module'
   },
+  ignorePatterns: ['**/__testfixtures__/**/*.js'],
   plugins: ['@typescript-eslint'],
   rules: {
     semi: ['error', 'always'],

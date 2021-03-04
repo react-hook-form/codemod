@@ -94,6 +94,10 @@ const TRANSFORMER_INQUIRER_CHOICES = [
   {
     name: 'v7/update-register: Transforms register api from v6 to v7',
     value: 'v7/update-register'
+  },
+  {
+    name: 'v7/move-errors-to-formState: Move `errors` key to `formState` key',
+    value: 'v7/move-errors-to-formState'
   }
 ];
 
