@@ -25,7 +25,8 @@ export function findUseFormImportDeclarations(
 
 export const findUseFormDeclarators = (
   root: Collection<any>,
-  j: JSCodeshift
+  j: JSCodeshift,
+  specifierName = USE_FORM
 ) => (
   path: ASTPath<ImportDeclaration>
 ): Collection<VariableDeclarator> | null => {
@@ -38,7 +39,7 @@ export const findUseFormDeclarators = (
   const useFormImport = path.value.specifiers.find(
     (specifier) =>
       specifier.type === 'ImportSpecifier' &&
-      specifier.imported.name === USE_FORM
+      specifier.imported.name === specifierName
   );
 
   if (!useFormImport) return null;

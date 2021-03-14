@@ -1,8 +1,9 @@
-import { FileInfo, API } from 'jscodeshift';
+import { FileInfo, API, ASTPath, VariableDeclarator } from 'jscodeshift';
 import {
   findUseFormImportDeclarations,
   findUseFormDeclarators
 } from '../../utils/getUseFormDeclarators';
+import { USE_FORM_CONTEXT } from '../../utils/keys';
 
 /**
  * `move-errors-to-formState` codemod which transforms react-hook-form v6 register api to v7
@@ -15,107 +16,117 @@ export default function transformer(file: FileInfo, api: API, options) {
     trailingComma: true
   };
 
+  const transformDeclaration = (useFormDeclarator: ASTPath<VariableDeclarator>) => {
+    /**
+     * We search for all `errors` properties
+     * @example
+     *  const { errors } = useForm();
+     *          ^
+     * */
+    const errorsProperties = j(useFormDeclarator).find(j.Identifier, {
+      name: 'errors'
+    });
+
+    errorsProperties
+      .filter((p) => p.name === 'key')
+      .forEach((errorProperty) => {
+      /**
+       * Retrieve `errors` property name
+       * @example
+       *  const { errors } = useForm();
+       *  const { errors: customErrors } = useForm();
+       * */
+        const error = errorProperty.parentPath.value;
+
+        /**
+       * We search for all `formState`
+       * @example
+       *  const { formState } = useForm();
+       *  const { formState: customFormState } = useForm();
+       * */
+        const formStateProperties = j(useFormDeclarator).find(j.Identifier, {
+          name: 'formState'
+        });
+
+        /**
+       * If any `formState`, create one then add `errors`
+       * @example
+       *  const { formState: { errors } } = useForm();
+       * */
+        if (formStateProperties.length === 0) {
+          if (useFormDeclarator.value.id.type === 'ObjectPattern') {
+            useFormDeclarator.value.id.properties.push(
+              j.property(
+                'init',
+                j.identifier('formState'),
+                j.objectPattern([error])
+              )
+            );
+          }
+        } else {
+          formStateProperties.forEach((formStateProperty) => {
+            if (formStateProperty.name !== 'key') {
+              return;
+            }
+
+            /**
+           * If `formState` is an object then add `errors`
+           * @example
+           *  const { formState: { isDirty, errors } } = useForm();
+           *                                ^
+           * */
+            if (
+              formStateProperty.parent.value.value.type === 'ObjectPattern'
+            ) {
+              formStateProperty.parentPath.value.value.properties.push(
+                error.value
+              );
+            } else if (
+              formStateProperty.parentPath.value.value.type === 'Identifier'
+            ) {
+            /**
+             * If `formState` is a key, create a `const` after `useForm` declaration
+             * @example
+             *  const { formState } = useForm();
+             *  const { errors } = formState;
+             * */
+              j(useFormDeclarator.parentPath.parentPath).insertAfter(
+                j.variableDeclaration('const', [
+                  j.variableDeclarator(
+                    j.objectPattern([error]),
+                    j.identifier(
+                      formStateProperty.parentPath.value.value.name
+                    )
+                  )
+                ])
+              );
+            }
+          });
+        }
+
+        j(errorProperty.parentPath).remove();
+      });
+  };
+
   findUseFormImportDeclarations(root, j).forEach((useFormImportDeclaration) => {
     const useFormDeclarators = findUseFormDeclarators(
       root,
       j
     )(useFormImportDeclaration);
 
-    if (!useFormDeclarators) {
-      return;
+    if (useFormDeclarators) {
+      useFormDeclarators.forEach(transformDeclaration);
     }
 
-    useFormDeclarators.forEach((useFormDeclarator) => {
-      /**
-       * We search for all `errors` properties
-       * @example
-       *  const { errors } = useForm();
-       *          ^
-       * */
-      const errorsProperties = j(useFormDeclarator).find(j.Identifier, {
-        name: 'errors'
-      });
+    const useFormContextDeclarators = findUseFormDeclarators(
+      root,
+      j,
+      USE_FORM_CONTEXT
+    )(useFormImportDeclaration);
 
-      errorsProperties
-        .filter((p) => p.name === 'key')
-        .forEach((errorProperty) => {
-          /**
-           * Retrieve `errors` property name
-           * @example
-           *  const { errors } = useForm();
-           *  const { errors: customErrors } = useForm();
-           * */
-          const error = errorProperty.parentPath.value;
-
-          /**
-           * We search for all `formState`
-           * @example
-           *  const { formState } = useForm();
-           *  const { formState: customFormState } = useForm();
-           * */
-          const formStateProperties = j(useFormDeclarator).find(j.Identifier, {
-            name: 'formState'
-          });
-
-          /**
-           * If any `formState`, create one then add `errors`
-           * @example
-           *  const { formState: { errors } } = useForm();
-           * */
-          if (formStateProperties.length === 0) {
-            if (useFormDeclarator.value.id.type === 'ObjectPattern') {
-              useFormDeclarator.value.id.properties.push(
-                j.property(
-                  'init',
-                  j.identifier('formState'),
-                  j.objectPattern([error])
-                )
-              );
-            }
-          } else {
-            formStateProperties.forEach((formStateProperty) => {
-              if (formStateProperty.name !== 'key') {
-                return;
-              }
-
-              /**
-               * If `formState` is an object then add `errors`
-               * @example
-               *  const { formState: { isDirty, errors } } = useForm();
-               *                                ^
-               * */
-              if (
-                formStateProperty.parent.value.value.type === 'ObjectPattern'
-              ) {
-                formStateProperty.parentPath.value.value.properties.push(
-                  error.value
-                );
-              } else if (
-                formStateProperty.parentPath.value.value.type === 'Identifier'
-              ) {
-                /**
-                 * If `formState` is a key, create a `const` after `useForm` declaration
-                 * @example
-                 *  const { formState } = useForm();
-                 *  const { errors } = formState;
-                 * */
-                j(useFormDeclarator.parentPath.parentPath).insertAfter(
-                  j.variableDeclaration('const', [
-                    j.variableDeclarator(
-                      j.objectPattern([error]),
-                      j.identifier(
-                        formStateProperty.parentPath.value.value.name
-                      )
-                    )
-                  ])
-                );
-              }
-            });
-          }
-
-          j(errorProperty.parentPath).remove();
-        });
-    });
+    if (useFormContextDeclarators) {
+      useFormContextDeclarators.forEach(transformDeclaration);
+    }
   });
 
   return root.toSource(printOptions);
