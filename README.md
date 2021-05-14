@@ -18,7 +18,7 @@
 
 ## Goal
 
-Migrate your React Hook Form codebase from older version to new without the hassle by using our codemod scrips
+Migrate your React Hook Form codebase from older version to new without the hassle by using our codemod scripts
 
 ## Usage
 
