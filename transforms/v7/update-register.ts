@@ -16,7 +16,9 @@ export default function transformer(file: FileInfo, api: API, options) {
     trailingComma: true
   };
 
-  const transformDeclaration = (useFormDeclarator: ASTPath<VariableDeclarator>) => {
+  const transformDeclaration = (
+    useFormDeclarator: ASTPath<VariableDeclarator>
+  ) => {
     /**
      * We search for all `register` properties
      * @example
@@ -42,29 +44,29 @@ export default function transformer(file: FileInfo, api: API, options) {
       j(registerProperty)
         .closestScope()
         .forEach((component) => {
-        /**
-         * We search for all `register`
-         * */
+          /**
+           * We search for all `register`
+           * */
           const registerIdentifiers = j(component).find(j.Identifier, {
             name: register
           });
 
           registerIdentifiers.forEach((registerIdentifier) => {
             const isCallExpression =
-            registerIdentifier.parent.value.type === 'CallExpression';
+              registerIdentifier.parent.value.type === 'CallExpression';
 
             /**
-           * We filter `register` to keep only `ref`
-           * @example
-           *  <input ref={register} name="example" />
-           *  <input ref={register()} name="example" />
-           *  <input ref={register({ required: true })} name="example" />
-           *  <input ref={registerCustomName({ required: true })} name="example" />
-           * */
+             * We filter `register` to keep only `ref`
+             * @example
+             *  <input ref={register} name="example" />
+             *  <input ref={register()} name="example" />
+             *  <input ref={register({ required: true })} name="example" />
+             *  <input ref={registerCustomName({ required: true })} name="example" />
+             * */
             if (
               registerIdentifier.parent.value.type !==
-            'JSXExpressionContainer' &&
-            !isCallExpression
+                'JSXExpressionContainer' &&
+              !isCallExpression
             ) {
               return;
             }
@@ -84,17 +86,22 @@ export default function transformer(file: FileInfo, api: API, options) {
             nameAttributes.forEach((nameAttribute) => {
               if (
                 nameAttribute.value.value.type !== 'Literal' &&
-              nameAttribute.value.value.type !== 'StringLiteral'
+                nameAttribute.value.value.type !== 'StringLiteral' &&
+                nameAttribute.value.value.type !== 'JSXExpressionContainer' // Handle template string case
               ) {
                 return;
               }
 
-              const name = nameAttribute.value.value.value;
+              const name =
+                nameAttribute.value.value.type === 'JSXExpressionContainer'
+                  ? nameAttribute.value.value.expression
+                  : j.literal(nameAttribute.value.value.value);
+
               /**
-             *  Add name to register('name')
-             *                        ^
-             * */
-              const args = [j.literal(name)];
+               *  Add name to register('name')
+               *                        ^
+               * */
+              const args = [name];
 
               // If `register` have params, we add them to our new args
               if (isCallExpression) {
@@ -102,10 +109,10 @@ export default function transformer(file: FileInfo, api: API, options) {
               }
 
               /**
-             * Replace `name` attribute with the new `register` api and args
-             * @example
-             *  name="example" => {...register("example")}
-             * */
+               * Replace `name` attribute with the new `register` api and args
+               * @example
+               *  name="example" => {...register("example")}
+               * */
               j(nameAttribute).replaceWith(
                 j.jsxSpreadAttribute(
                   j.callExpression(j.identifier(register), args)
