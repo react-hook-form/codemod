@@ -15,7 +15,8 @@ const fixtures = [
   'function-component-context',
   'function-components-context',
   'no-transform-context',
-  'custom-register-context'
+  'custom-register-context',
+  'template-string-register'
 ];
 
 fixtures.forEach(defineTest(__dirname, 'v7/update-register'));
